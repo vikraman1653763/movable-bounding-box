@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Object Detection - RESULT</title>
+    <style>
+        .bounding-box {
+            position: absolute;
+            border: 2px solid red;
+            cursor: pointer;
+        }
+        .object-label {
+            position: absolute;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        var selectedBox = null;
+        var xOffset = 0;
+        var yOffset = 0;
+
+        function selectBox(boxId, event) {
+            selectedBox = document.getElementById(boxId);
+            xOffset = event.clientX - selectedBox.offsetLeft;
+            yOffset = event.clientY - selectedBox.offsetTop;
+            event.stopPropagation();
+        }
+
+        function dragBox(event) {
+            if (selectedBox) {
+                event.preventDefault();
+                selectedBox.style.left = (event.clientX - xOffset) + 'px';
+                selectedBox.style.top = (event.clientY - yOffset) + 'px';
+                var labelId = selectedBox.id.replace('bbox-', 'label-');
+                var label = document.getElementById(labelId);
+                label.style.left = selectedBox.style.left;
+                label.style.top = (parseInt(selectedBox.style.top) - 20) + 'px';
+            }
+        }
+
+        function releaseBox() {
+            selectedBox = null;
+        }
+
+        function saveBoundingBoxes() {
+            // Retrieve the positions and sizes of bounding boxes
+            var boundingBoxes = [];
+            var boxes = document.getElementsByClassName('bounding-box');
+            for (var i = 0; i < boxes.length; i++) {
+                var boxId = boxes[i].id.replace('bbox-', '');
+                var labelId = 'label-' + boxId;
+                var box = boxes[i];
+                var label = document.getElementById(labelId);
+                var x = parseInt(box.style.left);
+                var y = parseInt(box.style.top);
+                var width = parseInt(box.style.width);
+                var height = parseInt(box.style.height);
+                boundingBoxes.push({ id: boxId, x: x, y: y, width: width, height: height });
+            }
+
+            // Perform further processing or send the bounding box data to the server
+            // ...
+
+            // Example: Display bounding box data in console
+            console.log(boundingBoxes);
+        }
+        
+        function saveBoundingBoxes() {
+            // Retrieve the positions and sizes of bounding boxes
+            var boundingBoxes = [];
+            var boxes = document.getElementsByClassName('bounding-box');
+            for (var i = 0; i < boxes.length; i++) {
+                var boxId = boxes[i].id.replace('bbox-', '');
+                var labelId = 'label-' + boxId;
+                var box = boxes[i];
+                var label = document.getElementById(labelId);
+                var x = parseInt(box.style.left);
+                var y = parseInt(box.style.top);
+                var width = parseInt(box.style.width);
+                var height = parseInt(box.style.height);
+                boundingBoxes.push({ id: boxId, x: x, y: y, width: width, height: height });
+            }
+        
+            // Prepare the data to be sent to the server
+            var imageData = '{{ image_data }}';
+            var data = {
+                image_data: imageData,
+                bounding_boxes: boundingBoxes
+            };
+        
+            // Send the data to the server using an AJAX request
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/save', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    // Redirect to the other web page
+                    window.location.href = '/otherpage';
+                }
+            };
+            xhr.send(JSON.stringify(data));
+        }
+    
+        
+    </script>
+    
+</head>
+<body onmousemove="dragBox(event)" onmouseup="releaseBox()">
+    <h1>Object Detection - Result</h1>
+    <div style="position: relative; display: inline-block;">
+        <img src="data:image/jpeg;base64,{{ image_data }}" alt="Result Image">
+        {% for bbox in bounding_boxes %}
+            <div id="bbox-{{ bbox.id }}" class="bounding-box" style="left:{{ bbox.x }}px; top:{{ bbox.y }}px; width:{{ bbox.width }}px; height:{{ bbox.height }}px;" onmousedown="selectBox('bbox-{{ bbox.id }}', event)"></div>
+            <div id="label-{{ bbox.id }}" class="object-label" style="left:{{ bbox.x }}px; top:{{ bbox.y - 20 }}px;">{{ bbox.id }}</div>
+        
+        {% endfor %}
+    </div>
+    <br>
+    <button onclick="saveBoundingBoxes()">Save</button>
+</body>
+</html>

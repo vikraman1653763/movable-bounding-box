@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Other Page</title>
+    <style>
+        .bounding-box {
+            position: absolute;
+            border: 2px solid red;
+            cursor: pointer;
+        }
+        .object-label {
+            position: absolute;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        // You can include any additional JavaScript code here if needed
+    </script>
+</head>
+<body>
+    <h1>Other Page</h1>
+    <div style="position: relative; display: inline-block;">
+        <img src="data:image/jpeg;base64,{{ image_data }}" alt="Processed Image">
+        {% for bbox in bounding_boxes %}
+            <div id="bbox-{{ bbox.id }}" class="bounding-box" style="left:{{ bbox.x }}px; top:{{ bbox.y }}px; width:{{ bbox.width }}px; height:{{ bbox.height }}px;"></div>
+            <div id="label-{{ bbox.id }}" class="object-label" style="left:{{ bbox.x }}px; top:{{ bbox.y - 20 }}px;">{{ bbox.id }}</div>
+        {% endfor %}
+    </div>
+</body>
+</html>
